@@ -1,4 +1,40 @@
-#include <breezystm32.h>
+#include "platform.h"
+
+// #include "common/axis.h"
+// #include "common/color.h"
+// #include "common/maths.h"
+#include "common/printf.h"
+
+// #include "config/config_eeprom.h"
+// #include "config/config_profile.h"
+// #include "config/feature.h"
+// #include "config/parameter_group.h"
+// #include "config/parameter_group_ids.h"
+
+// #include "drivers/nvic.h"
+// #include "drivers/sensor.h"
+#include "drivers/system.h"
+// #include "drivers/dma.h"
+#include "drivers/io.h"
+// #include "drivers/light_led.h"
+#include "drivers/timer.h"
+#include "drivers/serial.h"
+#include "drivers/serial_uart.h"
+#include "drivers/gpio.h"
+#include "drivers/accgyro.h"
+#include "drivers/accgyro_mpu.h"
+#include "drivers/accgyro_mpu6500.h"
+#include "drivers/accgyro_spi_mpu6500.h"
+// #include "drivers/pwm_esc_detect.h"
+// #include "drivers/rx_pwm.h"
+#include "drivers/pwm_output.h"
+// #include "drivers/adc.h"
+// #include "drivers/bus_i2c.h"
+#include "drivers/bus_spi.h"
+// #include "drivers/inverter.h"
+// #include "drivers/usb_io.h"
+// #include "drivers/exti.h"
+#include "drivers/serial_usb_vcp.h"
 
 #include "flash.h"
 
@@ -41,7 +77,7 @@ void clock_delay(uint32_t milliseconds)
 
 void serial_init(uint32_t baud_rate)
 {
-  Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
+  Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX, SERIAL_NOT_INVERTED);
 }
 
 void serial_write(uint8_t byte)
@@ -51,7 +87,7 @@ void serial_write(uint8_t byte)
 
 uint16_t serial_bytes_available(void)
 {
-  return serialTotalBytesWaiting(Serial1);
+  return serialRxBytesWaiting(Serial1);
 }
 
 uint8_t serial_read(void)

@@ -56,9 +56,15 @@ ROOT			= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 		= .
 ROSFLIGHT_DIR 	= ..
 TURBOTRIG_DIR 	= ../lib/turbotrig
-BREEZY_DIR		= lib/breezystm32f3
-CMSIS_DIR		= $(BREEZY_DIR)/lib/CMSIS
-STDPERIPH_DIR	= $(BREEZY_DIR)/lib/STM32F30x_StdPeriph_Driver
+BEECORELITE_DIR	= lib/betaflight_beecorelite
+CMSIS_DIR		= $(BEECORELITE_DIR)/lib/main/CMSIS
+STDPERIPH_DIR	= $(BEECORELITE_DIR)/lib/main/STM32F30x_StdPeriph_Driver
+USBFS_DIR		= $(BEECORELITE_DIR)/lib/main/STM32_USB-FS-Device_Driver
+DRIVERS_DIR		= $(BEECORELITE_DIR)/src/main/drivers
+TARGET_DIR		= $(BEECORELITE_DIR)/src/main/target
+VCP_DIR			= $(BEECORELITE_DIR)/src/main/vcp
+STARTUP_DIR		= $(BEECORELITE_DIR)/src/main/startup
+LINKER_DIR		= $(BEECORELITE_DIR)/src/main/target/link
 OBJECT_DIR		= $(ROOT)/build
 BIN_DIR			= $(ROOT)/build
 
@@ -97,29 +103,27 @@ MATH_SRC =	turbotrig.c \
 
 
 # Hardware Driver Source Files
-VPATH :=	$(VPATH):$(BREEZY_DIR)
-BREEZY_SRC = system.c \
-			 system_stm32f30x.c \
-			 system_stm32f30x_extras.c \
-			 gpio_stm32f30x.c \
-			 serial.c \
-			 accgyro_spi_mpu6500.c \
-			 startup_stm32f30x.S
+VPATH :=	$(VPATH):$(DRIVERS_DIR)
+DRIVERSLIB_SRC = system.c \
+				 system_stm32f30x.c \
+				 gpio_stm32f30x.c \
+				 serial.c \
+				 serial_uart.c \
+				 serial_uart_stm32f30x.c \
+				 io.c \
+				 rcc.c \
+				 light_led.c \
+				 accgyro_spi_mpu6500.c \
+				 serial_usb_vcp.c \
+				 usb_io.c
 
+# Target hardware source files
+VPATH :=	$(VPATH):$(TARGET_DIR)
+TARGET_SRC = system_stm32f30x.c
 
-# drv_uart.c \
-# drv_timer.c \
-# drv_mpu6050.c \
-# drv_ms4525.c \
-# drv_mb1242.c \
-# drv_ms5611.c \
-# drv_hmc5883l.c \
-# startup_stm32f30x.S
-
-# drv_i2c.c \
-# drv_adc.c \
-# drv_spi.c \
-# drv_pwm.c \
+# Microcontroller ASM startup source
+VPATH :=	$(VPATH):$(STARTUP_DIR)
+STARTUP_SRC = startup_stm32f30x_md_gcc.S
 
 # Search path and source files for the CMSIS sources
 VPATH		:= $(VPATH):$(CMSIS_DIR)/CM1/CoreSupport:$(CMSIS_DIR)/CM1/DeviceSupport/ST/STM32F30x
@@ -127,18 +131,30 @@ CMSIS_SRC	 = $(notdir $(wildcard $(CMSIS_DIR)/CM1/CoreSupport/*.c \
 				       $(CMSIS_DIR)/CM1/DeviceSupport/ST/STM32F30x/*.c))
 
 # Search path and source files for the ST stdperiph library
-VPATH		:= $(VPATH):$(STDPERIPH_DIR)/src
+VPATH			:= $(VPATH):$(STDPERIPH_DIR)/src
 STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 
+# Search path and source files for the ST USB FS library
+VPATH		:= $(VPATH):$(USBFS_DIR)/src
+USBFS_SRC	 = $(notdir $(wildcard $(USBFS_DIR)/src/*.c))
+
+# Search path and source files for the VCP library
+VPATH		:= $(VPATH):$(VCP_DIR)/src
+VCP_SRC	 	 = $(notdir $(wildcard $(VCP_DIR)/*.c))
+
 # Linker script for stm32f3
-LD_SCRIPT	 = $(BREEZY_DIR)/stm32_flash_f303_$(FLASH_SIZE)k.ld
+LD_SCRIPT	 = $(LINKER_DIR)/stm32_flash_f303_$(FLASH_SIZE)k.ld
 
 # Compile a list of C source files
 CSOURCES =  $(CMSIS_SRC) \
 			$(STDPERIPH_SRC) \
+			$(USBFS_SRC) \
+			$(VCP_SRC) \
 			$(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
-			$(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
+			$(addprefix $(DRIVERS_DIR)/, $(DRIVERSLIB_SRC)) \
+			$(addprefix $(TARGET_DIR)/, $(TARGET_SRC)) \
 			$(addprefix $(BOARD_DIR)/, $(BOARD_SRC)) \
+			$(addprefix $(STARTUP_DIR)/, $(STARTUP_SRC)) \
 			$(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) 
 
 # Compile a list of C++ Source Files
@@ -146,11 +162,15 @@ CXXSOURCES =
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BOARD_DIR) \
-				$(BREEZY_DIR) \
+				$(BEECORELITE_DIR)/src/main \
+				$(DRIVERS_DIR) \
+				$(TARGET_DIR) \
+				$(VCP_DIR) \
 				$(TURBOTRIG_DIR) \
 				$(ROSFLIGHT_DIR)/include \
 				$(ROSFLIGHT_DIR)/lib \
 				$(STDPERIPH_DIR)/inc \
+				$(USBFS_DIR)/inc \
 				$(CMSIS_DIR)/CM1/CoreSupport \
 				$(CMSIS_DIR)/CM1/DeviceSupport/ST/STM32F30x
 
@@ -192,7 +212,7 @@ DEFS=-DSTM32F303xC -DSTM32F303 -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=gnu99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
 CXXFLAGS+=-U__STRICT_ANSI__
-LDFLAGS =-T$(LD_SCRIPT) $(MCFLAGS) -Wl,-L$(BREEZY_DIR) -lm -nostartfiles -lc --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
+LDFLAGS =-T$(LD_SCRIPT) $(MCFLAGS) -Wl,-L$(LINKER_DIR) -lm -nostartfiles -lc --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 #################################
 # Build

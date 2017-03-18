@@ -17,171 +17,96 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER "AFF3" // AlienFlight F3.
-#define USE_HARDWARE_REVISION_DETECTION
+#define TARGET_BOARD_IDENTIFIER "SPEV"
 
-#define DEFAULT_PID_PROCESS_DENOM 1
-#define DEFAULT_GYRO_SAMPLE_HZ 2000
+#define TARGET_CONFIG
 
-#define HW_GPIO     GPIOB
-#define HW_PIN      Pin_2
-#define HW_PERIPHERAL RCC_AHBPeriph_GPIOB
+#define CONFIG_FASTLOOP_PREFERRED_ACC ACC_DEFAULT
 
-// LED's V1
-#define LED0_GPIO   GPIOB
-#define LED0_PIN    Pin_4 // Blue LEDs - PB4
-#define LED0_PERIPHERAL RCC_AHBPeriph_GPIOB
-#define LED1_GPIO   GPIOB
-#define LED1_PIN    Pin_5  // Green LEDs - PB5
-#define LED1_PERIPHERAL RCC_AHBPeriph_GPIOB
+#undef USE_DSHOT
 
-// LED's V2
-#define LED0_GPIO_2   GPIOB
-#define LED0_PIN_2    Pin_8 // Blue LEDs - PB8
-#define LED0_PERIPHERAL_2 RCC_AHBPeriph_GPIOB
-#define LED1_GPIO_2   GPIOB
-#define LED1_PIN_2    Pin_9  // Green LEDs - PB9
-#define LED1_PERIPHERAL_2 RCC_AHBPeriph_GPIOB
+// #define BRUSHED_ESC_AUTODETECT
 
-#define BEEP_GPIO   GPIOA
-#define BEEP_PIN    Pin_5  // White LEDs - PA5
-#define BEEP_PERIPHERAL RCC_AHBPeriph_GPIOA
+#define NOMAIN
 
-#define USABLE_TIMER_CHANNEL_COUNT 11
+#define LED0                    PB8
 
-//#define DEBUG_MPU_DATA_READY_INTERRUPT
+#define USE_EXTI
+#define MPU_INT_EXTI            PC13 // what?
+#define EXTI15_10_CALLBACK_HANDLER_COUNT 2 // MPU_INT, SDCardDetect
 #define USE_MPU_DATA_READY_SIGNAL
+#define ENSURE_MPU_DATA_READY_IS_LOW
 
-// Using MPU6050 for the moment.
+// #define USE_ESC_SENSOR
+
 #define GYRO
-#define USE_GYRO_MPU6050
-#define USE_GYRO_MPU6500
 #define USE_GYRO_SPI_MPU6500
 
-#define GYRO_MPU6050_ALIGN CW270_DEG
-#define GYRO_MPU6500_ALIGN CW270_DEG
-
 #define ACC
-#define USE_ACC_MPU6050
-#define USE_ACC_MPU6500
 #define USE_ACC_SPI_MPU6500
 
-#define ACC_MPU6050_ALIGN CW270_DEG
-#define ACC_MPU6500_ALIGN CW270_DEG
-
-// No baro support.
-//#define BARO
-//#define USE_BARO_MS5611
-
-// option to use MPU9150 or MPU9250 integrated AK89xx Mag
-#define MAG
-#define USE_MAG_AK8963
-
-#define MAG_AK8963_ALIGN CW0_DEG_FLIP
-
-#define BEEPER
-#define LED0
-#define LED1
-
-#define USB_IO
+#define ACC_MPU6500_ALIGN       CW180_DEG
+#define GYRO_MPU6500_ALIGN      CW180_DEG
 
 #define USE_VCP
-#define USE_UART1 // Not connected - TX (PB6) RX PB7 (AF7)
-#define USE_UART2 // Receiver - RX (PA3)
-#define USE_UART3 // Not connected - 10/RX (PB11) 11/TX (PB10)
-#define SERIAL_PORT_COUNT 4
+#define USE_UART1
+// #define USE_UART2
+// #define USE_UART3
 
-#define USE_UART1_TX_DMA
-#define UART1_TX_PIN        GPIO_Pin_6 // PB6
-#define UART1_RX_PIN        GPIO_Pin_7 // PB7
-#define UART1_GPIO          GPIOB
-#define UART1_GPIO_AF       GPIO_AF_7
-#define UART1_TX_PINSOURCE  GPIO_PinSource6
-#define UART1_RX_PINSOURCE  GPIO_PinSource7
+#define SERIAL_PORT_COUNT       2
 
-#define UART2_TX_PIN        GPIO_Pin_2 // PA2
-#define UART2_RX_PIN        GPIO_Pin_3 // PA3
-#define UART2_GPIO          GPIOA
-#define UART2_GPIO_AF       GPIO_AF_7
-#define UART2_TX_PINSOURCE  GPIO_PinSource2
-#define UART2_RX_PINSOURCE  GPIO_PinSource3
+// #define USE_ESCSERIAL
+// #define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
 
-#define UART3_TX_PIN        GPIO_Pin_10 // PB10 (AF7)
-#define UART3_RX_PIN        GPIO_Pin_11 // PB11 (AF7)
-#define UART3_GPIO_AF       GPIO_AF_7
-#define UART3_GPIO          GPIOB
-#define UART3_TX_PINSOURCE  GPIO_PinSource10
-#define UART3_RX_PINSOURCE  GPIO_PinSource11
+#define UART1_TX_PIN            PA9
+#define UART1_RX_PIN            PA10
 
+#define UART2_TX_PIN            PA14 // PA14 / SWCLK
+#define UART2_RX_PIN            PA15
+
+#define UART3_TX_PIN            PB10 // PB10 (AF7)
+#define UART3_RX_PIN            PB11 // PB11 (AF7)
 
 #define USE_I2C
-#define I2C_DEVICE (I2CDEV_2) // SDA (PA10/AF4), SCL (PA9/AF4)
-
-#define I2C2_SCL_GPIO        GPIOA
-#define I2C2_SCL_GPIO_AF     GPIO_AF_4
-#define I2C2_SCL_PIN         GPIO_Pin_9
-#define I2C2_SCL_PIN_SOURCE  GPIO_PinSource9
-#define I2C2_SCL_CLK_SOURCE  RCC_AHBPeriph_GPIOA
-#define I2C2_SDA_GPIO        GPIOA
-#define I2C2_SDA_GPIO_AF     GPIO_AF_4
-#define I2C2_SDA_PIN         GPIO_Pin_10
-#define I2C2_SDA_PIN_SOURCE  GPIO_PinSource10
-#define I2C2_SDA_CLK_SOURCE  RCC_AHBPeriph_GPIOA
-
-// SPI3
-// PA15 38 SPI3_NSS
-// PB3  39 SPI3_SCK
-// PB4  40 SPI3_MISO
-// PB5  41 SPI3_MOSI
+#define USE_I2C_DEVICE_1
+#define I2C_DEVICE              (I2CDEV_1)
 
 #define USE_SPI
-#define USE_SPI_DEVICE_3
+#define USE_SPI_DEVICE_1 // PB9,3,4,5 on AF5 SPI1 (MPU)
+// #define USE_SPI_DEVICE_2 // PB12,13,14,15 on AF5 SPI2 (SDCard)
 
-#define MPU6500_CS_GPIO_CLK_PERIPHERAL   RCC_AHBPeriph_GPIOA
-#define MPU6500_CS_GPIO                  GPIOA
-#define MPU6500_CS_PIN                   GPIO_Pin_15
-#define MPU6500_SPI_INSTANCE             SPI3
+#define SPI1_NSS_PIN            PB9
+#define SPI1_SCK_PIN            PB3
+#define SPI1_MISO_PIN           PB4
+#define SPI1_MOSI_PIN           PB5
 
+// #define SPI2_NSS_PIN            PB12
+// #define SPI2_SCK_PIN            PB13
+// #define SPI2_MISO_PIN           PB14
+// #define SPI2_MOSI_PIN           PB15
+
+#define MPU6500_CS_PIN                   PB9
+#define MPU6500_SPI_INSTANCE             SPI1
+
+#define BOARD_HAS_VOLTAGE_DIVIDER
 #define USE_ADC
+#define ADC_INSTANCE            ADC2
+#define RSSI_ADC_PIN            PB2
+#define VBAT_ADC_PIN            PA4
+#define CURRENT_METER_ADC_PIN   PA5
 
-#define ADC_INSTANCE         ADC2
-#define ADC_DMA_CHANNEL      DMA2_Channel1
-#define ADC_AHB_PERIPHERAL   RCC_AHBPeriph_DMA2
+#define DEFAULT_RX_FEATURE      FEATURE_RX_PPM
+#define DEFAULT_FEATURES        (FEATURE_RSSI_ADC | FEATURE_CURRENT_METER)
 
+#define SPEKTRUM_BIND_PIN       UART3_RX_PIN
 
-#define ADC0_GPIO                   GPIOA
-#define ADC0_GPIO_PIN               GPIO_Pin_4
-#define ADC0_CHANNEL                ADC_Channel_1
+#define USE_SERIAL_4WAY_BLHELI_INTERFACE
 
-#define ADC_CHANNEL_COUNT 1
+// IO - stm32f303cc in 48pin package
+#define TARGET_IO_PORTA         0xffff
+#define TARGET_IO_PORTB         0xffff
+#define TARGET_IO_PORTC         (BIT(13)|BIT(14)|BIT(15))
+#define TARGET_IO_PORTF         (BIT(0)|BIT(1)|BIT(4))
 
-#define ADC_BATTERY     ADC_CHANNEL0
-
-#define DEFAULT_RX_FEATURE FEATURE_RX_SERIAL
-#define DEFAULT FEATURES FEATURE_MOTOR_STOP
-
-#define SERIAL_RX
-#define GTUNE
-#define USE_SERVOS
-#define USE_CLI
-#define USE_EXTI
-
-#define SPEKTRUM_BIND
-// UART2, PA3
-#define BIND_PORT  GPIOA
-#define BIND_PIN   Pin_3
-
-// alternative defaults for AlienFlight F3 target
-#define ALIENFLIGHT
-#define HARDWARE_BIND_PLUG
-
-// Hardware bind plug at PB12 (Pin 25)
-#define BINDPLUG_PORT  GPIOB
-#define BINDPLUG_PIN   Pin_12
-
-// IO - assuming 303 in 64pin package, TODO
-#define TARGET_IO_PORTA 0xffff
-#define TARGET_IO_PORTB 0xffff
-#define TARGET_IO_PORTC 0xffff
-#define TARGET_IO_PORTD (BIT(2))
-#define TARGET_IO_PORTF (BIT(0)|BIT(1)|BIT(4))
+#define USABLE_TIMER_CHANNEL_COUNT 12 // PPM, 8 PWM, UART3 RX/TX, LED Strip
+#define USED_TIMERS             (TIM_N(1) | TIM_N(2) | TIM_N(3) | TIM_N(8) | TIM_N(15) | TIM_N(16))
