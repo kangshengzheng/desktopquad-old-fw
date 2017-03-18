@@ -4,3 +4,6 @@
 [submodule "naze/lib/breezystm32"]
 	path = naze/lib/breezystm32
 	url = https://github.com/byu-magicc/BreezySTM32.git
+[submodule "beecore/lib/betaflight_beecorelite"]
+	path = beecore/lib/betaflight_beecorelite
+	url = https://github.com/plusk01/betaflight
