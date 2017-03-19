@@ -94,7 +94,6 @@ ROSFLIGHT_SRC =	rosflight.c \
 				mux.c \
 				mixer.c \
 				param.c \
-				printf.c \
 				rc.c \
 				sensors.c
 
@@ -125,7 +124,9 @@ DRIVERSLIB_SRC = system.c \
 				 gyro_sync.c \
 				 bus_spi.c \
 				 serial_usb_vcp.c \
-				 usb_io.c
+				 usb_io.c \
+				 ../common/printf.c \
+				 ../common/typeconversion.c
 
 # Target hardware source files
 VPATH :=	$(VPATH):$(TARGET_DIR)
@@ -199,6 +200,7 @@ OBJECTS+=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(CXXSOU
 #################################
 TARGET_ELF=$(BIN_DIR)/$(TARGET).elf
 TARGET_HEX=$(BIN_DIR)/$(TARGET).hex
+TARGET_BIN=$(BIN_DIR)/$(TARGET).bin
 
 #################################
 # Debug Config
@@ -229,6 +231,12 @@ LDFLAGS =-T$(LD_SCRIPT) $(MCFLAGS) -Wl,-L$(LINKER_DIR) -lm -nostartfiles -lc --s
 #################################
 $(TARGET_HEX): $(TARGET_ELF)
 	$(CP) -O ihex --set-start 0x8000000 $< $@
+
+$(TARGET_BIN): $(TARGET_ELF)
+	$(CP) -O binary $< $@
+
+binary:
+	make -j $(TARGET_BIN)
 
 $(TARGET_ELF): $(OBJECTS)
 	$(CXX) -o $@ $^ $(LDFLAGS)

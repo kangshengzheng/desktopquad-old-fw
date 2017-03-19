@@ -46,8 +46,34 @@ static serialPort_t *cereal = NULL;
 
 void init_board(void)
 {
+  printfSupportInit();
+  
   // this enables the FPU, sets up clocks, NVIC, SysTick
   systemInit();
+
+  // initialize IO (needed for all IO operations)
+  IOInitGlobal();
+
+  // setup external interrupt driver
+  EXTIInit();
+
+  delay(100);
+
+  // timer must be initialized before any channel is allocated
+  timerInit();
+
+  // led GPIOB_Pin_8
+  LEDInit();
+
+  // open serial ports
+  serial0 = usbVcpOpen();
+  cereal = uartOpen(USART1, NULL, 115200, MODE_RXTX, SERIAL_NOT_INVERTED);
+  setPrintfSerialPort(cereal);
+
+  led0_on();
+  delay(100);
+  led0_off();
+  delay(100);
 }
 
 void board_reset(bool bootloader)
@@ -78,7 +104,7 @@ void clock_delay(uint32_t milliseconds)
 void serial_init(uint32_t baud_rate)
 {
   // serial0 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX, SERIAL_NOT_INVERTED);
-  serial0 = usbVcpOpen();
+  // serial0 = usbVcpOpen();
 }
 
 void serial_write(uint8_t byte)
@@ -114,6 +140,9 @@ static gyroDev_t _gyroDev;
 void sensors_init(int board_revision)
 {
     (void)(board_revision);
+
+    // For MPU6500
+    spiInit(SPIDEV_1);
 
     // Gyro (do gyro first!)
     gyroInit(&_gyroDev);
@@ -281,8 +310,8 @@ bool memory_write(const void * src, size_t len)
 
 // LED
 
-void led0_on(void) { /*LED0_ON;*/ }
-void led0_off(void) { /*LED0_OFF;*/ }
+void led0_on(void) { digitalLo(GPIOB, GPIO_Pin_8);/*LED0_ON;*/ }
+void led0_off(void) { digitalHi(GPIOB, GPIO_Pin_8);/*LED0_OFF;*/ }
 void led0_toggle(void) { /*LED0_TOGGLE;*/ }
 
 void led1_on(void) { /*LED1_ON;*/ }

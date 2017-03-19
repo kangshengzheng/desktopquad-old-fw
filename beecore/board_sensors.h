@@ -1,5 +1,6 @@
 #pragma once
 
+void LEDInit();
 bool gyroDetect(gyroDev_t *dev);
 bool gyroInit(gyroDev_t *dev);
 bool accDetect(accDev_t *dev);

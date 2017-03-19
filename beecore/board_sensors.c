@@ -49,6 +49,16 @@ static bool gyroUpdateISR(gyroDev_t* gyroDev) {
     return true;
 }
 
+void LEDInit() {
+    gpio_config_t cfg;
+
+    cfg.pin = GPIO_Pin_8;
+    cfg.mode = Mode_Out_PP;
+    cfg.speed = Speed_50MHz;
+
+    gpioInit(GPIOB, &cfg);
+}
+
 bool gyroDetect(gyroDev_t *dev) {
     if (mpu6500SpiGyroDetect(dev)) {
         dev->gyroAlign = GYRO_MPU6500_ALIGN;
