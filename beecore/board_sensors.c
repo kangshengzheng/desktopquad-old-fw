@@ -62,7 +62,7 @@ void LEDInit() {
 bool gyroDetect(gyroDev_t *dev) {
     if (mpu6500SpiGyroDetect(dev)) {
         dev->gyroAlign = GYRO_MPU6500_ALIGN;
-        printf("Gyro SPI Found!\n");
+        printf("Gyro SPI found!\n");
         return true;
     }
     return false;
@@ -87,7 +87,7 @@ bool gyroInit(gyroDev_t *dev) {
 bool accDetect(accDev_t *dev) {
     if (mpu6500SpiAccDetect(dev)) {
         dev->accAlign = ACC_MPU6500_ALIGN;
-        printf("SPI found\n");
+        printf("Acc SPI found!\n");
         return true;
     }
     return false;
@@ -109,7 +109,7 @@ bool accInit(accDev_t *dev, gyroDev_t *gyroDev) {
     return true;
 }
 
-void mpuSetISR(gyroDev_t *gyroDev, void (*callback)(void)) {
+void mpuSetISR(void (*callback)(void)) {
     mpuCallback = callback;
 }
 
