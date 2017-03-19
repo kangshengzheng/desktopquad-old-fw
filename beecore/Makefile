@@ -76,7 +76,9 @@ BIN_DIR			= $(ROOT)/build
 # board-specific source files
 VPATH		:= $(BOARD_DIR)
 BOARD_SRC =	main.c \
-			board.c
+			board.c \
+			target.c \
+			board_sensors.c
 
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
@@ -107,13 +109,21 @@ VPATH :=	$(VPATH):$(DRIVERS_DIR)
 DRIVERSLIB_SRC = system.c \
 				 system_stm32f30x.c \
 				 gpio_stm32f30x.c \
+				 dma.c \
 				 serial.c \
 				 serial_uart.c \
 				 serial_uart_stm32f30x.c \
 				 io.c \
 				 rcc.c \
+				 timer.c \
+				 exti.c \
+				 timer_stm32f30x.c \
 				 light_led.c \
+				 accgyro_mpu.c \
+				 accgyro_mpu6500.c \
 				 accgyro_spi_mpu6500.c \
+				 gyro_sync.c \
+				 bus_spi.c \
 				 serial_usb_vcp.c \
 				 usb_io.c
 

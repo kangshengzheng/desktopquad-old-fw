@@ -39,14 +39,14 @@
 #include "flash.h"
 
 #include "board.h"
+#include "board_sensors.h"
 
-extern void SetSysClock(bool overclock);
-serialPort_t *Serial1;
+static serialPort_t *serial0 = NULL;
+static serialPort_t *cereal = NULL;
 
 void init_board(void)
 {
-  // Configure clock, this figures out HSE for hardware autodetect
-  SetSysClock(0);
+  // this enables the FPU, sets up clocks, NVIC, SysTick
   systemInit();
 }
 
@@ -77,22 +77,25 @@ void clock_delay(uint32_t milliseconds)
 
 void serial_init(uint32_t baud_rate)
 {
-  Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX, SERIAL_NOT_INVERTED);
+  // serial0 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX, SERIAL_NOT_INVERTED);
+  serial0 = usbVcpOpen();
 }
 
 void serial_write(uint8_t byte)
 {
-  serialWrite(Serial1, byte);
+  serialWrite(serial0, byte);
 }
 
 uint16_t serial_bytes_available(void)
 {
-  return serialRxBytesWaiting(Serial1);
+  return serialRxBytesWaiting(serial0);
 }
 
 uint8_t serial_read(void)
 {
-  return serialRead(Serial1);
+  // here I could add a check for the bootloader character
+  // to send the system into bootloader reset
+  return serialRead(serial0);
 }
 
 // sensors
@@ -105,46 +108,66 @@ static bool _diff_pressure_present;
 static float _accel_scale;
 static float _gyro_scale;
 
+static accDev_t _accDev;
+static gyroDev_t _gyroDev;
+
 void sensors_init(int board_revision)
 {
     (void)(board_revision);
 
-    // IMU
-    uint16_t acc1G;
-    mpu6050_init(true, &acc1G, &_gyro_scale, board_revision);
+    // Gyro (do gyro first!)
+    gyroInit(&_gyroDev);
+
+    // Accelerometer
+    accInit(&_accDev, &_gyroDev);
+
+    // Set acc1G. Modified once by mpu6050CheckRevision for old (hopefully nonexistent outside of clones) parts
+    const uint16_t acc1G = 512 * 8; // 256?
     _accel_scale = 9.80665f/acc1G;
+
+    // 16.4 dps/lsb scalefactor for all Invensense devices
+    _gyro_scale = (1.0f / 16.4f) * (3.14159 / 180.0f);
 }
 
 void imu_register_callback(void (*callback)(void))
 {
-  mpu6050_register_interrupt_cb(callback);
+  mpuSetISR(callback);
 }
 
 void imu_read_accel(float accel[3])
 {
   // Convert to NED
-  int16_t accel_raw[3];
-  mpu6050_read_accel(accel_raw);
-  accel[0] = accel_raw[0] * _accel_scale;
-  accel[1] = -accel_raw[1] * _accel_scale;
-  accel[2] = -accel_raw[2] * _accel_scale;
+  _accDev.read(&_accDev);
+  accel[0] = _accDev.ADCRaw[0] * _accel_scale;
+  accel[1] = -_accDev.ADCRaw[1] * _accel_scale;
+  accel[2] = -_accDev.ADCRaw[2] * _accel_scale;
 }
 
 void imu_read_gyro(float gyro[3])
 {
   //  Convert to NED
-  int16_t gyro_raw[3];
-  mpu6050_read_gyro(gyro_raw);
-  gyro[0] = gyro_raw[0] * _gyro_scale;
-  gyro[1] = -gyro_raw[1] * _gyro_scale;
-  gyro[2] = -gyro_raw[2] * _gyro_scale;
+  _gyroDev.read(&_gyroDev);
+  gyro[0] = _gyroDev.gyroADCRaw[0] * _gyro_scale;
+  gyro[1] = -_gyroDev.gyroADCRaw[1] * _gyro_scale;
+  gyro[2] = -_gyroDev.gyroADCRaw[2] * _gyro_scale;
 }
 
 float imu_read_temperature(void)
 {
-  int16_t temperature_raw;
-  mpu6050_read_temperature(&temperature_raw);
-  return temperature_raw/340.0f + 36.53f;
+  // int16_t temperature_raw;
+  // mpu6050_read_temperature(&temperature_raw);
+  // return temperature_raw/340.0f + 36.53f;
+
+  // TODO: implement
+  return 0.0f;
+}
+
+void imu_not_responding_error()
+{
+  // // If the IMU is not responding, then we need to change where we look for the
+  // // interrupt
+  // _board_revision = (_board_revision < 4) ? 5 : 2;
+  // sensors_init();
 }
 
 bool mag_present(void)
@@ -155,12 +178,9 @@ bool mag_present(void)
 void mag_read(float mag[3])
 {
   // Convert to NED
-  int16_t raw_mag[3];
-  hmc5883l_update();
-  hmc5883l_read(raw_mag);
-  mag[0] = (float)raw_mag[0];
-  mag[1] = -(float)raw_mag[1];
-  mag[2] = -(float)raw_mag[2];
+  mag[0] = 0.0f;
+  mag[1] = 0.0f;
+  mag[2] = 0.0f;
 }
 
 bool mag_check(void)
@@ -219,25 +239,28 @@ float sonar_read(void)
 }
 
 // PWM
+static motorDevConfig_t motorDev;
 
 void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
 {
-  pwmInit(cppm, false, false, refresh_rate, idle_pwm);
+  // pwmInit(cppm, false, false, refresh_rate, idle_pwm);
 }
 
 uint16_t pwm_read(uint8_t channel)
 {
-  return pwmRead(channel);
+  // return pwmRead(channel);
+  return 0;
 }
 
 void pwm_write(uint8_t channel, uint16_t value)
 {
-  pwmWriteMotor(channel, value);
+  // pwmWriteMotor(channel, value);
 }
 
 bool pwm_lost()
 {
-    return ((millis() - pwmLastUpdate()) > 40);
+    // return ((millis() - pwmLastUpdate()) > 40);
+    return false;
 }
 
 // non-volatile memory

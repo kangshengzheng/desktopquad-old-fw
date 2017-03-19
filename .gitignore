@@ -12,6 +12,7 @@
 *.o
 /build/*
 /naze/build
+/beecore/build
 
 param_description.md
 
