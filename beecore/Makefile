@@ -150,7 +150,7 @@ VPATH		:= $(VPATH):$(USBFS_DIR)/src
 USBFS_SRC	 = $(notdir $(wildcard $(USBFS_DIR)/src/*.c))
 
 # Search path and source files for the VCP library
-VPATH		:= $(VPATH):$(VCP_DIR)/src
+VPATH		:= $(VPATH):$(VCP_DIR)
 VCP_SRC	 	 = $(notdir $(wildcard $(VCP_DIR)/*.c))
 
 # Linker script for stm32f3
