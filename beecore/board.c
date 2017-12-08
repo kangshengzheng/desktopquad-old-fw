@@ -151,7 +151,8 @@ void sensors_init(int board_revision)
     accInit(&_accDev, &_gyroDev);
 
     // Set acc1G. Modified once by mpu6050CheckRevision for old (hopefully nonexistent outside of clones) parts
-    const uint16_t acc1G = 512 * 8; // 256?
+    // const uint16_t acc1G = 512 * 8; // 256?
+    const uint16_t acc1G = 256 * 8; // 256?
     _accel_scale = 9.80665f/acc1G;
 
     // 16.4 dps/lsb scalefactor for all Invensense devices
